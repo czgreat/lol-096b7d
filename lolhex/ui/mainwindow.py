@@ -78,6 +78,7 @@ class MainWindow(QMainWindow):
         self.btn_dash = QPushButton("打开数据看板")
         self.btn_dash.clicked.connect(self.open_dashboard)
         head.addWidget(self.btn_dash)
+        self.btn_dash.setVisible(bool(engine.dashboard_url))
         lay.addLayout(head)
 
         self.status = QLabel()
@@ -229,8 +230,8 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, "重新校准", "已清除卡片位置，下次出现海克斯三选一时会重新校准。")
 
     def open_dashboard(self):
-        if self.engine.settings.nas_url:
-            webbrowser.open(self.engine.settings.nas_url.rstrip("/") + "/")
+        if self.engine.dashboard_url:
+            webbrowser.open(self.engine.dashboard_url)
 
     # ---------- 英雄选择 ----------
 
@@ -408,7 +409,8 @@ class Tray(QSystemTrayIcon):
         self.act_overlay.toggled.connect(self._toggle_overlay)
         m.addAction(self.act_overlay)
         m.addAction("重新识别", engine.rescan)
-        m.addAction("打开数据看板", window.open_dashboard)
+        if engine.dashboard_url:
+            m.addAction("打开数据看板", window.open_dashboard)
         self.act_auto = QAction("开机自动启动", m, checkable=True)
         self.act_auto.setChecked(autostart.is_enabled())
         self.act_auto.toggled.connect(self._toggle_auto)

@@ -70,6 +70,8 @@ class Engine:
             self.store = DataStore(self.home / "data", settings.refresh_hours, settings.huya_enabled,
                                    settings.aramgg_api_key)
         self.live = None
+        # 网页看板只有连数据服务时才有（离线版、直连都没有）
+        self.dashboard_url = settings.nas_url.rstrip("/") + "/" if isinstance(self.store, RemoteStore) else None
         if settings.use_liveclient:
             from .game.liveclient import LiveClient
             self.live = LiveClient()

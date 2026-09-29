@@ -51,3 +51,9 @@ def test_speed_factor():
     assert Settings().speed_factor == 1.0
     assert Settings(speed="low").speed_factor == 4.0
     assert Settings(speed="bogus").speed_factor == 1.0
+
+
+def test_dashboard_hidden_without_service(tmp_path):
+    assert Engine(Settings(), home=tmp_path).dashboard_url is None  # 离线版没有网页看板
+    e = Engine(Settings(offline=False, nas_url="http://127.0.0.1:9"), home=tmp_path)
+    assert e.dashboard_url == "http://127.0.0.1:9/"

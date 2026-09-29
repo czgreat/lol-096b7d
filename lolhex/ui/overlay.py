@@ -391,8 +391,8 @@ class ControlPanel(QWidget):
             self.search.clear()
 
     def _link(self, href):
-        if href == "dashboard" and self.engine.settings.nas_url:
-            webbrowser.open(self.engine.settings.nas_url + "/")
+        if href == "dashboard" and self.engine.dashboard_url:
+            webbrowser.open(self.engine.dashboard_url)
         elif href == "rescan":
             self.engine.rescan()
         elif href == "quit":
@@ -488,8 +488,8 @@ class ControlPanel(QWidget):
                      f" · ARAMGG {dd.get('aramgg_patch') or '—'}"
                      f"{f" · Hexdata {dd.get('hexdata_heroes')} 个英雄" if dd.get('hexdata_heroes') else ''}"
                      f" · 虎牙 {dd.get('huya_patch') or '—'}</span>")
-        parts.append("<a href='dashboard' style='color:#62a8ff'>打开数据看板</a>　"
-                     "<a href='rescan' style='color:#62a8ff'>重新识别</a>　"
+        parts.append(("<a href='dashboard' style='color:#62a8ff'>打开数据看板</a>　" if self.engine.dashboard_url else "")
+                     + "<a href='rescan' style='color:#62a8ff'>重新识别</a>　"
                      "<a href='quit' style='color:#ff7a6b'>退出助手</a>")
         html = "<br>".join(parts)
         if self.info.text() != html:
