@@ -26,9 +26,20 @@ def app_home() -> Path:
 # 旧版默认值 → 升级时换成新默认值（用户手改过的不动）
 OLD_DEFAULTS = {"scan_interval_ms": 700}
 
+# 识别频率档位：间隔乘以倍数。只有「标准」在 4K 机器上实测过，其余按比例放慢、省 CPU
+SPEEDS = {
+    "standard": ("标准（默认，已实测）", 1.0),
+    "saver": ("省电：间隔 ×2（未实测）", 2.0),
+    "low": ("低配电脑：间隔 ×4（未实测）", 4.0),
+}
+
 
 @dataclass
 class Settings:
+    # 使用安装包自带的数据快照（不联网更新数据）。关掉后按 nas_url / 直连公开数据源。
+    offline: bool = True
+    # 识别频率档位（见 SPEEDS）：standard / saver / low。
+    speed: str = "standard"
     # 数据服务地址；留空则直连公开数据源。
     nas_url: str = ""
     # 读取游戏内 2999 接口（Riot 官方只读、非 LCU）识别英雄与等级。默认关闭。
@@ -82,6 +93,10 @@ class Settings:
         if changed or not path.exists():
             s.save(path)
         return s
+
+    @property
+    def speed_factor(self) -> float:
+        return SPEEDS.get(self.speed, SPEEDS["standard"])[1]
 
     def save(self, path: Path | None = None) -> None:
         path = path or app_home() / "config.json"

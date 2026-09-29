@@ -483,7 +483,7 @@ class ControlPanel(QWidget):
         parts.append(f"<span style='color:#8b93a7'>海克斯识别：{vs}{' · 已校准' if v.get('calibrated') else ' · 未校准'}"
                      f"{' · 截图全黑，请改无边框' if v.get('blank') else ''}</span>")
         dd = snap.get("data", {})
-        srcname = {"nas": "数据服务", "direct": "直连", "pending": "连接中"}.get(dd.get("source"), "直连")
+        srcname = {"offline": "内置", "nas": "数据服务", "direct": "直连", "pending": "连接中"}.get(dd.get("source"), "直连")
         parts.append(f"<span style='color:#8b93a7'>数据（{srcname}）{dd.get('patch') or '—'} · 腾讯 {dd.get('tencent_date') or '—'}"
                      f" · ARAMGG {dd.get('aramgg_patch') or '—'}"
                      f"{f" · Hexdata {dd.get('hexdata_heroes')} 个英雄" if dd.get('hexdata_heroes') else ''}"

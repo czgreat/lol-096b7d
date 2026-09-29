@@ -19,6 +19,7 @@ from pathlib import Path
 
 from . import recommend
 from .config import Settings, app_home
+from .data.offline import OfflineStore, bundled_dir
 from .data.remote import RemoteStore
 from .data.store import DataStore
 from .panel import hero_panel
@@ -61,6 +62,8 @@ class Engine:
         self.home = home or app_home()
         if store is not None:
             self.store = store
+        elif settings.offline and bundled_dir():
+            self.store = OfflineStore(bundled_dir())
         elif settings.nas_url:
             self.store = RemoteStore(self.home / "data", settings.nas_url, settings.refresh_hours)
         else:
@@ -274,7 +277,7 @@ class Engine:
         if phase == "client" and win.is_foreground(client):
             self._champ_select_scan(client)
             # 画面没变的位置直接复用上次结果，所以可以扫得很勤
-            return 0.5 if self.state["champ_select"] else 1.0
+            return (0.5 if self.state["champ_select"] else 1.0) * self.settings.speed_factor
         if phase == "client":
             return 1.0  # 客户端切到后台：只查窗口不截图，切回来 1 秒内恢复
         return 3.0
@@ -404,18 +407,18 @@ class Engine:
             offer, ran = None, False
             try:
                 if det.calibrated_for(rect.width, rect.height) and not forced:
-                    if now - last_strip >= self.settings.scan_interval_ms / 1000:
+                    if now - last_strip >= self.settings.scan_interval_ms / 1000 * self.settings.speed_factor:
                         last_strip = now
                         offer = det.check_strip(capture.grab(det.strip_rect(rect)), rect)
                         ran = True
                         # 一直识别不到：整块扫描一次，防止卡片位置变了；
                         # 还在用默认位置时照常按 bootstrap 间隔扫，本机校准过就 30 秒一次
                         confirmed = det.confirmed_for(rect.width, rect.height)
-                        every = 30 if confirmed else self.settings.bootstrap_interval_s
+                        every = 30 if confirmed else self.settings.bootstrap_interval_s * self.settings.speed_factor
                         if offer is None and not visible and now - last_full > every:
                             last_full = now
                             offer = det.scan_full(capture.grab(rect), (rect.left, rect.top))
-                elif forced or now - last_full >= self.settings.bootstrap_interval_s:
+                elif forced or now - last_full >= self.settings.bootstrap_interval_s * self.settings.speed_factor:
                     last_full = now
                     frame = capture.grab(rect)
                     blank = capture.is_blank(frame)

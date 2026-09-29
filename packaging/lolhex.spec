@@ -6,6 +6,7 @@ datas = collect_data_files("rapidocr")  # OCR 模型（.onnx）与配置（.yaml
 datas += [("../lolhex/ui/icon.png", "lolhex/ui")]
 datas += [("../lolhex/data/hero_aliases.json", "lolhex/data")]  # 英雄别名（Hexdata）
 datas += [("../lolhex/data/hero_nicknames.json", "lolhex/data")]  # 英雄外号（网上常见叫法）
+datas += [("../bundled-data", "bundled-data")]  # 内置数据快照（离线版，16.19）
 binaries = collect_dynamic_libs("onnxruntime")
 
 a = Analysis(

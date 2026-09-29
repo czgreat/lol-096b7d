@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout, 
                                QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMenu, QMessageBox, QPushButton,
                                QSystemTrayIcon, QTabWidget, QVBoxLayout, QWidget)
 
+from ..config import SPEEDS
 from . import autostart
 from . import buildview
 from .herosearch import hero_completer
@@ -168,6 +169,12 @@ class MainWindow(QMainWindow):
         w = QWidget()
         f = QFormLayout(w)
         self.set_nas = QLineEdit(s.nas_url)
+        self.set_offline = QCheckBox("使用内置数据（安装包自带，不联网更新）")
+        self.set_offline.setChecked(s.offline)
+        self.set_speed = QComboBox()
+        for key, (label, _) in SPEEDS.items():
+            self.set_speed.addItem(label, key)
+        self.set_speed.setCurrentIndex(max(0, self.set_speed.findData(s.speed)))
         self.set_win = QCheckBox("显示胜率数字")
         self.set_win.setChecked(s.show_winrate)
         self.set_live = QCheckBox("读取游戏内 2999 接口识别英雄（Riot 官方只读接口，非 LCU）")
@@ -179,7 +186,9 @@ class MainWindow(QMainWindow):
         self.set_overlay.setChecked(s.overlay)
         self.set_auto = QCheckBox("开机自动启动（启动后最小化到托盘）")
         self.set_auto.setChecked(autostart.is_enabled())
+        f.addRow("", self.set_offline)
         f.addRow("数据服务", self.set_nas)
+        f.addRow("识别频率", self.set_speed)
         f.addRow("", self.set_win)
         f.addRow("", self.set_overlay)
         f.addRow("浮窗位置", self.set_corner)
@@ -188,8 +197,11 @@ class MainWindow(QMainWindow):
         save = QPushButton("保存设置")
         save.clicked.connect(self._save_settings)
         f.addRow("", save)
-        note = QLabel("<span style='color:#777'>数据服务地址、2999 接口的改动在重启助手后生效。"
-                      "游戏请设为无边框或窗口化。</span>")
+        note = QLabel("<span style='color:#777'>内置数据、数据服务地址、2999 接口的改动在重启助手后生效；识别频率保存后立即生效。<br>"
+                      "识别频率：标准档选人界面每 0.5 秒、游戏内每 0.3 秒看一次（画面没变几乎不占 CPU）。"
+                      "电脑较旧、玩游戏卡顿时可以换省电或低配档，代价是识别慢一点。<br>"
+                      "分辨率自动识别（1080p / 2K / 4K 都支持），不用设置。"
+                      "<b>游戏必须设为无边框（或窗口化）</b>：游戏内 设置 → 视频 → 窗口模式。独占全屏下截不到画面，浮窗也看不到。</span>")
         note.setWordWrap(True)
         f.addRow("", note)
         return w
@@ -197,6 +209,8 @@ class MainWindow(QMainWindow):
     def _save_settings(self):
         s = self.engine.settings
         s.nas_url = self.set_nas.text().strip()
+        s.offline = self.set_offline.isChecked()
+        s.speed = self.set_speed.currentData() or "standard"
         s.show_winrate = self.set_win.isChecked()
         s.use_liveclient = self.set_live.isChecked()
         s.overlay = self.set_overlay.isChecked()
@@ -259,9 +273,10 @@ class MainWindow(QMainWindow):
         snap = self.engine.snapshot()
         self._ensure_completer()
         dd = snap.get("data", {})
-        src = {"nas": "数据服务", "direct": "直连公开数据源", "pending": "连接中"}.get(dd.get("source"), "直连公开数据源")
+        src = {"offline": "内置数据（不联网更新）", "nas": "数据服务", "direct": "直连公开数据源", "pending": "连接中"}.get(dd.get("source"), "直连公开数据源")
         v = snap.get("vision", {})
         self.status.setText(
+            "<span style='color:#b8860b'>使用前：游戏设置 → 视频 → 窗口模式选「无边框」，否则识别不到。</span><br>"
             f"<b>状态：</b>{PHASE_CN.get(snap.get('phase'), snap.get('phase'))}<br>"
             f"<b>海克斯识别：</b>{VISION_CN.get(v.get('status'), v.get('status'))}"
             f"{' · 已校准' if v.get('calibrated') else ' · 未校准（首次出现三选一时自动校准）'}"
