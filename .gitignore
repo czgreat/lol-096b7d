@@ -1,0 +1,8 @@
+.env
+dist/
+test-report/
+__pycache__/
+.venv/
+node_modules/
+build/
+*.spec.bak

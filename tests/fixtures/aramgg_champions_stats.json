@@ -1,0 +1,44 @@
+[
+ {
+  "championId": "157",
+  "tier": "1",
+  "winRate": 0.5695,
+  "numWinGames": null,
+  "numGames": null,
+  "pickRate": 0.1077,
+  "version": "16.18",
+  "date": "2026-09-20",
+  "source": "tencent",
+  "region": "CN",
+  "rank": 1,
+  "rankDelta": "未变化"
+ },
+ {
+  "championId": "17",
+  "tier": "1",
+  "winRate": 0.5349,
+  "numWinGames": null,
+  "numGames": null,
+  "pickRate": 0.1399,
+  "version": "16.18",
+  "date": "2026-09-20",
+  "source": "tencent",
+  "region": "CN",
+  "rank": 2,
+  "rankDelta": "未变化"
+ },
+ {
+  "championId": "1",
+  "tier": "5",
+  "winRate": 0.489,
+  "numWinGames": null,
+  "numGames": null,
+  "pickRate": 0.0228,
+  "version": "16.18",
+  "date": "2026-09-20",
+  "source": "tencent",
+  "region": "CN",
+  "rank": 133,
+  "rankDelta": "未变化"
+ }
+]

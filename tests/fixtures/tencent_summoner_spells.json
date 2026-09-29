@@ -1,0 +1,69 @@
+{
+ "summonerskill": {
+  "1": {
+   "name": "净化",
+   "description": "移除身上的所有限制效果（压制效果和击飞效果除外）和召唤师技能的减益效果，并提供韧性。",
+   "summonerlevel": "9",
+   "cooldown": "240",
+   "gamemode": "极地大乱斗,教学,,一对一模式,经典,训练模式,无限火力,克隆大作战,峡谷大乱斗,末日人机",
+   "icon": "https://game.gtimg.cn/images/lol/act/img/spell/Summoner_boost.png"
+  },
+  "3": {
+   "name": "虚弱",
+   "description": "使目标敌方英雄减速并将其造成的伤害削减。",
+   "summonerlevel": "4",
+   "cooldown": "240",
+   "gamemode": "无限火力,训练模式,经典,,末日人机,极地大乱斗,克隆大作战,教学,峡谷大乱斗",
+   "icon": "https://game.gtimg.cn/images/lol/act/img/spell/Summoner_exhaust.png"
+  },
+  "4": {
+   "name": "闪现",
+   "description": "使你朝着你的指针位置瞬间传送一小段距离。",
+   "summonerlevel": "7",
+   "cooldown": "300",
+   "gamemode": "极地大乱斗,教学,,一对一模式,经典,训练模式,无限火力,冰雪无限火力,克隆大作战,峡谷大乱斗,末日人机",
+   "icon": "https://game.gtimg.cn/images/lol/act/img/spell/Summoner_flash.png"
+  },
+  "6": {
+   "name": "幽灵疾步",
+   "description": "在期间内获得移动速度并无视单位的碰撞体积。",
+   "summonerlevel": "1",
+   "cooldown": "240",
+   "gamemode": "极地大乱斗,,教学,一对一模式,经典,训练模式,无限火力,克隆大作战,峡谷大乱斗,末日人机",
+   "icon": "https://game.gtimg.cn/images/lol/act/img/spell/Summoner_haste.png"
+  },
+  "7": {
+   "name": "治疗术",
+   "description": "为你和目标友军英雄回复生命值，并为你和目标友军英雄提供移动速度。",
+   "summonerlevel": "1",
+   "cooldown": "240",
+   "gamemode": "极地大乱斗,,教学,经典,训练模式,无限火力,克隆大作战,峡谷大乱斗,末日人机",
+   "icon": "https://game.gtimg.cn/images/lol/act/img/spell/Summoner_heal.png"
+  },
+  "14": {
+   "name": "引燃",
+   "description": "对目标敌方英雄造成持续真实伤害并在持续期间降低目标受到的治疗效果。",
+   "summonerlevel": "9",
+   "cooldown": "180",
+   "gamemode": "极地大乱斗,教学,,一对一模式,经典,训练模式,无限火力,克隆大作战,峡谷大乱斗,末日人机",
+   "icon": "https://game.gtimg.cn/images/lol/act/img/spell/SummonerIgnite.png"
+  },
+  "21": {
+   "name": "屏障",
+   "description": "获得一个临时护盾。",
+   "summonerlevel": "4",
+   "cooldown": "180",
+   "gamemode": "极地大乱斗,教学,,一对一模式,经典,训练模式,无限火力,克隆大作战,峡谷大乱斗,末日人机",
+   "icon": "https://game.gtimg.cn/images/lol/act/img/spell/SummonerBarrier.png"
+  },
+  "32": {
+   "name": "标记",
+   "description": "沿直线扔出一个雪球。如果雪球命中了一个敌人，那么这个敌人会被【标记】，提供真实视野，并且你的英雄接下来可以快速突进到被【标记】的目标旁边。",
+   "summonerlevel": "6",
+   "cooldown": "80",
+   "gamemode": ",极地大乱斗,一对一模式",
+   "icon": "https://game.gtimg.cn/images/lol/act/img/spell/Summoner_Mark.png"
+  }
+ },
+ "version": "16.19"
+}

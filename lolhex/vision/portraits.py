@@ -1,0 +1,148 @@
+"""选英雄界面的英雄头像识别：把截图里的头像小块和官方方形头像库比对。
+
+只读屏幕像素。头像库来自腾讯公开 CDN（game.gtimg.cn/.../champion/{alias}.png），
+首次使用时下载到本地缓存。
+
+比对方法：取头像中间的圆形区域（避开边框、圆角和选中高亮），缩到 20×20，
+头像库按几种放大倍数各算一份（客户端头像裁得更紧），
+各通道减均值后做归一化相关；对截图小块再试几种轻微的平移和缩放，容忍位置误差。
+"""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+
+import cv2
+import numpy as np
+
+log = logging.getLogger(__name__)
+
+SIDE = 20
+# 截图小块的平移（占边长比例）与缩放，覆盖定位误差
+SHIFTS = (-0.06, 0.0, 0.06)
+SCALES = (0.9, 1.0, 1.1)
+# 客户端头像比官方方形头像放得更大（约取中间 66%），头像库每个英雄准备几种放大倍数
+ZOOMS = (0.84, 0.74, 0.66)
+# 实机截图（取各倍数最好的一个）：真头像 0.79–0.98、领先第二名 0.15 以上；
+# 空位、刷新动画中的暗头像最高约 0.68，几乎不领先
+MIN_SCORE = 0.75   # 低于它就当作不是头像（空位、问号、锁定图标、别的界面图片）
+MIN_MARGIN = 0.10  # 第一名要比第二名高出这么多才算确定
+
+
+def _mask() -> np.ndarray:
+    yy, xx = np.mgrid[0:SIDE, 0:SIDE]
+    c = (SIDE - 1) / 2
+    return ((xx - c) ** 2 + (yy - c) ** 2) <= (SIDE * 0.42) ** 2
+
+
+MASK = _mask()
+
+
+def _feature(img: np.ndarray, inner: float = 0.84) -> np.ndarray | None:
+    """方形头像 → 归一化特征向量。inner：取中间多大比例（去掉外圈边框）。"""
+    if img is None or img.size == 0 or min(img.shape[:2]) < 8:
+        return None
+    h, w = img.shape[:2]
+    s = min(h, w) * inner
+    x0, y0 = int(round((w - s) / 2)), int(round((h - s) / 2))
+    crop = img[y0:y0 + int(s), x0:x0 + int(s)]
+    small = cv2.resize(crop, (SIDE, SIDE), interpolation=cv2.INTER_AREA).astype(np.float32)
+    v = small[MASK]  # (n, 3)
+    v = v - v.mean(axis=0, keepdims=True)
+    v = v.ravel()
+    n = float(np.linalg.norm(v))
+    if n < 1e-3:
+        return None
+    return v / n
+
+
+def _variants(img: np.ndarray) -> list[np.ndarray]:
+    h, w = img.shape[:2]
+    out = []
+    for sc in SCALES:
+        s = min(h, w) * 0.84 / sc
+        for dy in SHIFTS:
+            for dx in SHIFTS:
+                cx, cy = w / 2 + dx * w, h / 2 + dy * h
+                x0, y0 = int(round(cx - s / 2)), int(round(cy - s / 2))
+                x1, y1 = x0 + int(round(s)), y0 + int(round(s))
+                if x0 < 0 or y0 < 0 or x1 > w or y1 > h:
+                    continue
+                f = _feature(img[y0:y1, x0:x1], inner=1.0)
+                if f is not None:
+                    out.append(f)
+    return out
+
+
+@dataclass
+class Match:
+    hero_id: str | None
+    score: float
+    second: float
+
+    @property
+    def sure(self) -> bool:
+        return self.hero_id is not None
+
+
+class IconBank:
+    def __init__(self, icons: dict[str, np.ndarray]):
+        ids, feats = [], []
+        for hid, img in icons.items():
+            fs = [_feature(img, z) for z in ZOOMS]
+            if all(f is not None for f in fs):
+                ids.append(hid)
+                feats.extend(fs)
+        self.ids = ids
+        # 每个英雄 len(ZOOMS) 行，按英雄连续排列
+        self.mat = np.stack(feats) if feats else np.zeros((0, int(MASK.sum()) * 3), np.float32)
+
+    def __len__(self) -> int:
+        return len(self.ids)
+
+    def classify(self, crop: np.ndarray) -> Match:
+        """一个头像小块（BGR，大致方形、头像居中）→ 英雄 id。"""
+        if not self.ids:
+            return Match(None, 0.0, 0.0)
+        vs = _variants(crop)
+        if not vs:
+            return Match(None, 0.0, 0.0)
+        sims = (np.stack(vs) @ self.mat.T).max(axis=0)  # 每行取最好的截图变体
+        sims = sims.reshape(len(self.ids), len(ZOOMS)).max(axis=1)  # 每个英雄取最好的放大倍数
+        order = np.argsort(-sims)
+        best, second = float(sims[order[0]]), float(sims[order[1]]) if len(order) > 1 else 0.0
+        hid = self.ids[order[0]] if best >= MIN_SCORE and best - second >= MIN_MARGIN else None
+        return Match(hid, best, second)
+
+    @classmethod
+    def from_dir(cls, folder: Path, heroes: dict[str, dict]) -> "IconBank":
+        icons = {}
+        for hid, h in heroes.items():
+            p = folder / f"{h.get('alias')}.png"
+            if p.exists():
+                img = cv2.imdecode(np.fromfile(str(p), np.uint8), cv2.IMREAD_COLOR)
+                if img is not None:
+                    icons[hid] = img
+        return cls(icons)
+
+
+def ensure_icons(folder: Path, heroes: dict[str, dict]) -> int:
+    """下载缺少的英雄头像，返回新下载的数量。失败的下次再试。"""
+    from ..data import http
+    folder.mkdir(parents=True, exist_ok=True)
+    n = 0
+    for h in heroes.values():
+        alias, url = h.get("alias"), h.get("icon")
+        if not alias or not url:
+            continue
+        p = folder / f"{alias}.png"
+        if p.exists() and p.stat().st_size > 0:
+            continue
+        try:
+            p.write_bytes(http.get(url, timeout=15, retries=1).content)
+            n += 1
+        except Exception as e:  # noqa: BLE001
+            log.warning("头像下载失败 %s：%s", alias, e)
+    return n

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>海克斯数据</title>
+<style>
+:root{--bg:#0f1115;--panel:#171a21;--line:#262b36;--fg:#e6e8ee;--dim:#8b93a7;--gold:#e7c35a;--silver:#b8c2d6;--prism:#c79bff;--good:#5fd38d;--bad:#ff7a6b;--acc:#62a8ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 "Microsoft YaHei UI","PingFang SC",system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:#0c0e12ee;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+header b{font-size:16px}.pill{padding:2px 8px;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--dim);font-size:12px}
+.pill.ok{color:var(--good)}.pill.warn{color:var(--bad)}
+main{max-width:1200px;margin:0 auto;padding:16px;display:grid;gap:16px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+h2{margin:0 0 10px;font-size:15px}h3{margin:14px 0 6px;font-size:13px;color:var(--dim);font-weight:600}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,select,button{background:#0f1218;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit}
+button{cursor:pointer}button:hover{border-color:var(--acc)}
+.offer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px;background:#12151b}
+.card.best{border-color:var(--good);box-shadow:0 0 0 1px var(--good) inset}.card.reroll{opacity:.8}
+.badge{font-size:12px;padding:1px 6px;border-radius:4px;margin-right:4px}
+.best .v{background:var(--good);color:#06120a}.reroll .v{background:#3a2a2a;color:var(--bad)}.ok .v{background:#243044;color:var(--acc)}.unknown .v{background:#333;color:var(--dim)}
+.r-silver{color:var(--silver)}.r-gold{color:var(--gold)}.r-prismatic{color:var(--prism)}
+.dim{color:var(--dim)}.pos{color:var(--good)}.neg{color:var(--bad)}
+.tabs{display:flex;gap:6px;margin:10px 0}.tabs button.on,.row button.on{border-color:var(--acc);color:var(--acc)}
+table{width:100%;border-collapse:collapse}td,th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{color:var(--dim);font-weight:500;font-size:12px}
+img.i{width:28px;height:28px;border-radius:4px;vertical-align:middle;margin-right:2px;background:#222}
+.seq{display:inline-grid;grid-auto-flow:column;gap:2px}.seq span{width:20px;text-align:center;border-radius:3px;background:#222;font-size:12px}
+.seq .R{background:#5b3b12}.seq .Q{background:#1f3350}.seq .W{background:#1f4636}.seq .E{background:#43254f}
+.hl{display:none}.bar{height:6px;background:#222;border-radius:3px;overflow:hidden;width:90px;display:inline-block;vertical-align:middle}.bar i{display:block;height:100%;background:var(--acc)}
+#heroList{max-height:320px;overflow:auto;display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#heroList button{padding:3px 8px;font-size:12px}
+@media (max-width:760px){.offer{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <b>海克斯大乱斗数据</b>
+  <span class="pill" id="pData">数据：—</span>
+  <span class="pill" id="pSync">同步：—</span>
+</header>
+<main>
+  <section>
+    <div class="row">
+      <h2 style="margin:0">英雄</h2>
+      <input id="q" placeholder="搜英雄：提莫 / Teemo / 迅捷斥候" oninput="renderHeroList()" style="min-width:260px">
+    </div>
+    <div id="heroList"></div>
+    <div id="heroPanel" class="dim" style="margin-top:10px">点一个英雄查看海克斯、出装与加点。</div>
+  </section>
+</main>
+<script>
+const RC={silver:'白银',gold:'黄金',prismatic:'棱彩'};
+let augSort='delta',heroes=[],augs={},curHero=null,tab='aug',state={},lastPanelHero=null,showWin=true;
+const $=id=>document.getElementById(id);
+const pct=(x,d=1)=>x==null?'—':(x*100).toFixed(d)+'%';
+const pp=x=>x==null?'':`<span class="${x>=0?'pos':'neg'}">${x>=0?'+':''}${x.toFixed(1)}pp</span>`;
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function j(u,o){const r=await fetch(u,o);return r.json()}
+async function post(u,b){await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});tick()}
+function heroName(h){return h?`${h.name}（${h.nick}）`:'—'}
+function img(u){return u?`<img class="i" src="${esc(u)}" loading="lazy" alt="">`:''}
+function itemImgs(list){return list.map(i=>`<span title="${esc(i.name)}">${img(i.icon)}</span>`).join('')}
+
+function renderHeroList(){
+  const q=$('q').value.trim().toLowerCase();
+  const hs=(q?heroes.filter(h=>(h.name+h.nick+h.alias+h.keywords).toLowerCase().includes(q)):heroes).slice(0,q?40:200);
+  $('heroList').innerHTML=hs.map(h=>`<button onclick="showHero('${h.id}')">${h.rank&&h.rank.rank?'<span class="dim">#'+h.rank.rank+'</span> ':''}${esc(h.name)}${h.rank&&h.rank.win!=null?' <span class="dim">'+pct(h.rank.win)+'</span>':''}</button>`).join('');
+}
+
+async function showHero(id){
+  curHero=id;lastPanelHero=id;
+  const d=await j('/api/hero/'+id+'/panel');
+  if(d.error){$('heroPanel').textContent='没有数据';return}
+  const h=d.hero,r=d.rank||{},hy=d.huya||{};
+  let head=`<div class="row" style="margin-bottom:6px">${img(h.icon)}<b style="font-size:16px">${esc(h.name)}</b><span class="dim">${esc(h.nick)}</span>
+  <span class="pill">腾讯 ${esc(d.patch||'')}：${r.tier?'T'+r.tier+' · ':''}胜率 ${pct(r.win)} · 选取 ${pct(r.pick)} · 第${r.rank??'—'}/${r.total??'—'}名</span>
+  <span class="pill">虎牙 ${esc(d.huya_patch||'—')}：${showWin?'胜率 '+pct(hy.win)+' · ':''}${hy.games??'—'}局</span><span class="pill">海克斯胜率：${esc(d.win_source||'ARAMGG')} ${esc(d.aramgg_patch||'未启用')}${d.aramgg_date?' · '+esc(d.aramgg_date):''}</span>
+  <span class="dim" style="font-size:12px">腾讯统计 ${esc(d.date||'—')} · 版本 ${esc(d.patch||'—')}</span></div>
+  <div class="tabs">${[['aug','海克斯'],['build','出装'],['skill','加点'],['partner','队友']].map(([k,t])=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';showHero('${id}')">${t}</button>`).join('')}</div>`;
+  let body='';
+  if(tab==='aug'){
+    body+=`<div class="row" style="font-size:12px">排序：<button class="${augSort=='delta'?'on':''}" onclick="augSort='delta';showHero('${id}')">按Δ胜率（推荐）</button><button onclick="augSort='rank';showHero('${id}')">按腾讯排名</button></div>`;
+    for(const rar of ['prismatic','gold','silver']){
+      let list=d.augments.filter(a=>a.rarity===rar);
+      if(augSort==='delta')list=[...list].sort((a,b)=>(b.delta??-99)-(a.delta??-99));
+      if(!list.length)continue;
+      body+=`<h3 class="r-${rar}">${RC[rar]}（${list.length}）</h3><table><tr><th>腾讯#</th><th>海克斯</th><th>层级</th><th>选取率</th>${showWin?'<th>本英雄胜率</th>':''}<th>Δ胜率(平滑)</th><th>国服快照Δ</th><th>样本</th></tr>`+
+      list.map(a=>`<tr><td>${a.rank??''}</td><td title="${esc(a.desc)}">${img(a.icon)}${esc(a.name)}</td><td>${esc(a.tier||'')}</td><td>${pct(a.pick)}</td>${showWin?`<td>${pct(a.win)}</td>`:''}<td>${a.delta==null?`<span class="dim">${{new:'新海克斯',reworked:'版本大改'}[a.changed]||'无'}</span>`:pp(a.delta)}${a.changed==='corrected'?' <span class="dim" title="版本改动，已按总体胜率变化修正">修正</span>':''}</td><td class="dim">${a.cn_delta==null?'':pp(a.cn_delta)}</td><td class="dim">${a.games??'—'}${a.sample==='low'?' 仅参考':''}${a.source==='huya'?' <span title="虎牙国服快照">虎牙</span>':''}${a.id==='2095'?' <span title="Hexdata 与 ARAMGG 差 1–8pp，口径不同">存疑</span>':''}</td></tr>`).join('')+'</table>';
+    }
+    body+=`<div class="dim" style="font-size:12px;margin-top:8px">层级、排名、选取率来自腾讯国服当天数据；单英雄胜率${d.win_source==='Hexdata'?`用 Hexdata（${esc(d.aramgg_patch||'—')}，国服，样本约 ARAMGG 的 7 倍）`:`用 ARAMGG（${esc(d.aramgg_patch||'—')}，客户端上传，约 97% 国服）`}，没有时用虎牙国服快照（${esc(d.huya_patch||'—')}）。「国服快照Δ」为虎牙 ${esc(d.huya_patch||'')} 的对照值。Δ胜率已按样本量平滑；选取率高不等于强。</div>`;
+  }else if(tab==='build'){
+    const b=d.builds;
+    body+=`<div class="dim" style="font-size:12px">出装按胜率从高到低排；出场不到同类最热门 1/10 的（样本太少）不列出。</div>`;
+    body+=`<h3>核心三件</h3><table><tr><th>装备</th>${showWin?'<th>胜率</th>':''}<th>出场</th></tr>${b.core.map(x=>`<tr><td>${itemImgs(x.items)} <span class="dim">${x.items.map(i=>esc(i.name)).join(' → ')}</span></td>${showWin?`<td>${pct(x.win)}</td>`:''}<td>${pct(x.pick)}</td></tr>`).join('')}</table>`;
+    body+=`<h3>完整出装</h3><table><tr><th>装备</th><th>选取率</th>${showWin?'<th>胜率</th>':''}</tr>${b.full.map(x=>`<tr><td>${itemImgs(x.items)}</td><td>${pct(x.pick)}</td>${showWin?`<td>${pct(x.win)}</td>`:''}</tr>`).join('')}</table>`;
+    body+=`<h3>鞋子</h3><table>${b.shoes.map(x=>`<tr><td>${itemImgs([x.item])} ${esc(x.item.name)}</td><td>${pct(x.pick)}</td>${showWin?`<td>${pct(x.win)}</td>`:''}</tr>`).join('')}</table>`;
+    body+=`<h3>出门装</h3><table>${b.start.map(x=>`<tr><td>${itemImgs(x.items)} <span class="dim">${x.items.map(i=>esc(i.name)).join(' + ')}</span></td><td>${pct(x.pick)}</td>${showWin?`<td>${pct(x.win)}</td>`:''}</tr>`).join('')}</table>`;
+    body+=`<h3>单件装备${d.win_source==='Hexdata'?'（Hexdata）':'（腾讯）'}</h3><table>${b.first.slice(0,10).map(x=>`<tr><td>${itemImgs([x.item])} ${esc(x.item.name)}</td>${showWin?`<td>${pct(x.win)}</td>`:''}<td>出场 ${pct(x.pick)}</td></tr>`).join('')}</table>`;
+    if((d.summoners||[]).length) body+=`<h3>召唤师技能（Hexdata）</h3><table>${d.summoners.map(x=>`<tr><td>${x.spells.map(s=>`<span title="${esc(s.name)}">${s.icon?img(s.icon):esc(s.name)}</span>`).join('')}</td><td>出场 ${pct(x.pick)}</td>${showWin?`<td>${pct(x.win)}</td>`:''}</tr>`).join('')}</table>`;
+  }else if(tab==='skill'){
+    const sp=d.spells||{};
+    body+=d.skills.map((o,i)=>`<h3>主升 ${o.max.map(k=>`${k}${sp[k]?'（'+esc(sp[k].name)+'）':''}`).join(' > ')} · ${o.games??''}场${showWin?' · 胜率 '+pct(o.win):''}</h3>`+
+      o.sequences.slice(0,3).map(s=>`<div class="row" style="margin:4px 0"><span class="seq">${s.seq.map(k=>`<span class="${k}">${k}</span>`).join('')}</span><span class="dim">${s.games??''}场${showWin?' · '+pct(s.win):''}</span></div>`).join('')).join('');
+    body+=`<div class="dim" style="font-size:12px;margin-top:8px">按 1 级起逐级加点顺序。</div>`;
+  }else if(tab==='partner'){
+    body+=`<table><tr><th>队友</th>${showWin?'<th>同队胜率</th>':''}<th>出现率</th></tr>${d.partners.map(p=>`<tr><td>${img(p.hero.icon)}${esc(p.hero.name||p.hero.id)}</td>${showWin?`<td>${pct(p.win)}</td>`:''}<td>${pct(p.pick)}</td></tr>`).join('')}</table>`;
+  }
+  $('heroPanel').innerHTML=head+body;$('heroPanel').classList.remove('dim');
+}
+
+
+
+
+async function tick(){
+  try{
+    const s=await j('/api/status');const dd=s.data,sy=s.sync;
+    $('pData').textContent=`数据：${dd.patch||'—'} · 腾讯 ${dd.tencent_date||'—'} · ARAMGG ${dd.aramgg_patch||'未启用'}${dd.aramgg_remaining!=null?'（今日余 '+dd.aramgg_remaining+'）':''}${dd.hexdata_heroes?' · Hexdata '+dd.hexdata_patch+'（'+dd.hexdata_heroes+' 个英雄）':''} · 虎牙 ${dd.huya_patch||'—'}`+(dd.error?' · 部分失败':'');
+    $('pData').className='pill '+(dd.error?'warn':'ok');$('pData').title=dd.error||'';
+    const t=x=>x?new Date(x*1000).toLocaleString('zh-CN',{hour12:false}):'—';
+    $('pSync').textContent=`同步：上次刷新 ${t(sy.last_refresh)} · 全量 ${t(sy.last_full_pass)}${sy.full_pass_progress?' · 进度 '+sy.full_pass_progress:''} · 快照 ${sy.last_snapshot||'—'}`;
+    $('pSync').className='pill '+(sy.errors&&sy.errors.length?'warn':'');$('pSync').title=(sy.errors||[]).map(e=>e.msg).join(' / ');
+  }catch(e){$('pData').textContent='服务未就绪'}
+}
+(async()=>{
+  heroes=await j('/api/heroes');showWin=true;
+  renderHeroList();tick();setInterval(tick,15000);
+})();
+</script>
+</body>
+</html>
