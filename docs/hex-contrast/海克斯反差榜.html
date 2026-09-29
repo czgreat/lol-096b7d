@@ -1,0 +1,126 @@
+<title>海克斯反差榜</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#EDF0F5;--surface:#FFFFFF;--ink:#172033;--muted:#5A6479;--line:#D5DAE4;
+  --gold:#A87A12;--prism:#6E45C9;--silver:#6B7A90;--good:#1C7F55;--bad:#B93A33;
+  --track:#E3E7EE;--barg:linear-gradient(90deg,#8C6FE0,#6E45C9);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#0F131B;--surface:#171D29;--ink:#E6E9F0;--muted:#98A1B5;--line:#2A3243;
+    --gold:#E0B64C;--prism:#B196FF;--silver:#A9B6C9;--good:#4FC98E;--bad:#FF7F73;
+    --track:#232B3A;--barg:linear-gradient(90deg,#7D5CE0,#B196FF);}
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0F131B;--surface:#171D29;--ink:#E6E9F0;--muted:#98A1B5;--line:#2A3243;
+  --gold:#E0B64C;--prism:#B196FF;--silver:#A9B6C9;--good:#4FC98E;--bad:#FF7F73;
+  --track:#232B3A;--barg:linear-gradient(90deg,#7D5CE0,#B196FF);}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;padding-inline:16px;padding-block:28px 56px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2{font-family:"Noto Serif SC","Songti SC",serif;text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:clamp(28px,6vw,42px);font-weight:900}
+h2{font-size:clamp(21px,4.4vw,27px);font-weight:900;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+p{margin:0;max-width:65ch}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:500}
+.lede{font-size:17px;color:var(--muted)}
+.lede b{color:var(--ink)}
+header{display:flex;flex-direction:column;gap:14px}
+.def{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--muted)}
+.def b{color:var(--ink)}
+.mono,.num,.cg,.kpi b{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+section{display:flex;flex-direction:column;gap:14px}
+.tag{font:600 12px/1 "Noto Sans SC",sans-serif;padding:4px 8px;border-radius:4px;border:1px solid currentColor;letter-spacing:.04em}
+.tag.prism{color:var(--prism)}.tag.silver{color:var(--silver)}.tag.gold{color:var(--gold)}
+.desc{font-size:14px;color:var(--muted);border-left:3px solid var(--line);padding-left:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-size:24px;font-weight:600;color:var(--ink)}
+.kpi span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.bars{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.bars li{display:grid;grid-template-columns:6.2em 1fr 3.4em;grid-template-areas:"hero track num" ". meta meta";column-gap:10px;align-items:center}
+.hero{grid-area:hero;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{grid-area:track;height:12px;background:var(--track);border-radius:3px;position:relative;overflow:hidden}
+.bar{position:absolute;top:0;bottom:0;left:0;background:var(--barg);border-radius:3px}
+.num{grid-area:num;text-align:right;font-weight:600;color:var(--good)}
+.meta{grid-area:meta;font-size:12px;color:var(--muted);line-height:1.3}
+.rk{color:var(--gold);font-weight:500}
+.dv .axis{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--muted);opacity:.6}
+.bars li.pos .bar{background:var(--good)}
+.bars li.neg .bar{background:var(--bad);left:auto}
+.bars li.neg .num{color:var(--bad)}
+.dvlegend{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding-left:calc(6.2em + 10px);padding-right:calc(3.4em + 10px)}
+.note{font-size:13.5px;color:var(--muted)}
+.combos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.combos li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.cg{font-size:20px;font-weight:600;color:var(--good);min-width:3.2em}
+.cm{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:2px}
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:6px}
+@media (max-width:560px){.kpi b{font-size:19px}.kpi{padding:10px}.combos{grid-template-columns:1fr}}
+</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow">海克斯大乱斗 · 国服 16.19 · 173 个英雄</div>
+  <h1>同一张海克斯，换个英雄能差 20 个百分点</h1>
+  <p class="lede">看描述挑海克斯，容易被"看起来很强"的牌骗。几十万场国服对局统计出来，<b>有些平平无奇的牌几乎对谁都赚，有些牌只对特定英雄是神牌</b>。</p>
+  <div class="def"><b>怎么读：</b>收益 = 拿了这张海克斯的对局胜率，减去这个英雄的平均胜率（单位：百分点）。<span class="mono">+5.0</span> 就是从 50% 变成 55%。每个英雄只统计 ≥3000 场的海克斯。</div>
+</header>
+
+<section>
+  <h2>科学狂人 <span class="tag prism">棱彩</span></h2>
+  <p class="desc">回合开始时随机变大（加适应之力和生命值）或变小（加技能急速和移速）。</p>
+  <div class="kpis">
+    <div class="kpi"><b>169/171</b><span>个英雄拿了是正收益</span></div>
+    <div class="kpi"><b>142</b><span>个英雄里排进前 10（每个英雄约 100 张可比）</span></div>
+    <div class="kpi"><b>+3.3</b><span>收益中位数，全部海克斯第一</span></div>
+  </div>
+  <p>变大变小都是纯加成、没有代价，而且和英雄定位无关，战士、刺客、射手全吃得到。收益最高的 10 个英雄：</p>
+  <ol class='bars'><li><span class="hero">战争之影</span><span class="track"><span class="bar" style="width:90.0%"></span></span><span class="num">+8.1</span><span class="meta">胜率 64.2% · 6.2 万场 · <span class="rk">第 3 / 121</span></span></li><li><span class="hero">影流之镰</span><span class="track"><span class="bar" style="width:81.1%"></span></span><span class="num">+7.3</span><span class="meta">胜率 62.3% · 5.4 万场 · <span class="rk">第 1 / 102</span></span></li><li><span class="hero">猩红收割者</span><span class="track"><span class="bar" style="width:74.4%"></span></span><span class="num">+6.7</span><span class="meta">胜率 54.3% · 5.6 万场 · <span class="rk">第 3 / 113</span></span></li><li><span class="hero">影流之主</span><span class="track"><span class="bar" style="width:68.9%"></span></span><span class="num">+6.2</span><span class="meta">胜率 56.0% · 4.6 万场 · <span class="rk">第 2 / 98</span></span></li><li><span class="hero">傲之追猎者</span><span class="track"><span class="bar" style="width:67.8%"></span></span><span class="num">+6.1</span><span class="meta">胜率 54.8% · 3.0 万场 · <span class="rk">第 5 / 117</span></span></li><li><span class="hero">放逐之刃</span><span class="track"><span class="bar" style="width:66.7%"></span></span><span class="num">+6.0</span><span class="meta">胜率 53.1% · 1.3 万场 · <span class="rk">第 1 / 103</span></span></li><li><span class="hero">无双剑姬</span><span class="track"><span class="bar" style="width:65.6%"></span></span><span class="num">+5.9</span><span class="meta">胜率 60.5% · 2.4 万场 · <span class="rk">第 3 / 114</span></span></li><li><span class="hero">不落魔锋</span><span class="track"><span class="bar" style="width:65.6%"></span></span><span class="num">+5.9</span><span class="meta">胜率 58.6% · 1.8 万场 · <span class="rk">第 2 / 119</span></span></li><li><span class="hero">铁血狼母</span><span class="track"><span class="bar" style="width:64.4%"></span></span><span class="num">+5.8</span><span class="meta">胜率 59.7% · 2.1 万场 · <span class="rk">第 4 / 98</span></span></li><li><span class="hero">狂厄蔷薇</span><span class="track"><span class="bar" style="width:62.2%"></span></span><span class="num">+5.6</span><span class="meta">胜率 58.9% · 1.2 万场 · <span class="rk">第 3 / 108</span></span></li></ol>
+  <p class="note">最不赚的也只是持平：众星之子（+0.1）、寒冰射手（-0.4）、死亡颂唱者（-0.5）。</p>
+</section>
+
+<section>
+  <h2>逃跑计划 <span class="tag silver">白银</span></h2>
+  <p class="desc">生命值降低时，获得巨量衰减护盾、加速和缩小。</p>
+  <div class="kpis">
+    <div class="kpi"><b>122/123</b><span>个英雄拿了是正收益</span></div>
+    <div class="kpi"><b>+2.8</b><span>收益中位数，仅次于科学狂人</span></div>
+    <div class="kpi"><b>白银</b><span>最低一档，却比绝大多数棱彩牌更稳</span></div>
+  </div>
+  <p>一张不起眼的保命牌。大乱斗天天打团，多活几秒就能多打几轮伤害。</p>
+  <ol class='bars'><li><span class="hero">祖安花火</span><span class="track"><span class="bar" style="width:86.7%"></span></span><span class="num">+5.2</span><span class="meta">胜率 52.6% · 2.1 万场 · <span class="rk">第 1 / 88</span></span></li><li><span class="hero">狂战士</span><span class="track"><span class="bar" style="width:81.7%"></span></span><span class="num">+4.9</span><span class="meta">胜率 51.4% · 1.8 万场 · <span class="rk">第 4 / 98</span></span></li><li><span class="hero">沙漠皇帝</span><span class="track"><span class="bar" style="width:76.7%"></span></span><span class="num">+4.6</span><span class="meta">胜率 52.6% · 8155 场 · <span class="rk">第 5 / 91</span></span></li><li><span class="hero">武器大师</span><span class="track"><span class="bar" style="width:70.0%"></span></span><span class="num">+4.2</span><span class="meta">胜率 55.3% · 4.3 万场 · <span class="rk">第 5 / 133</span></span></li><li><span class="hero">沙漠玫瑰</span><span class="track"><span class="bar" style="width:70.0%"></span></span><span class="num">+4.2</span><span class="meta">胜率 52.2% · 4.7 万场 · <span class="rk">第 4 / 102</span></span></li><li><span class="hero">不落魔锋</span><span class="track"><span class="bar" style="width:68.3%"></span></span><span class="num">+4.1</span><span class="meta">胜率 56.8% · 2.9 万场 · <span class="rk">第 4 / 119</span></span></li><li><span class="hero">德玛西亚之翼</span><span class="track"><span class="bar" style="width:65.0%"></span></span><span class="num">+3.9</span><span class="meta">胜率 51.5% · 1.6 万场 · <span class="rk">第 4 / 87</span></span></li><li><span class="hero">复仇之矛</span><span class="track"><span class="bar" style="width:65.0%"></span></span><span class="num">+3.9</span><span class="meta">胜率 53.9% · 1.5 万场 · <span class="rk">第 3 / 82</span></span></li><li><span class="hero">荒漠屠夫</span><span class="track"><span class="bar" style="width:65.0%"></span></span><span class="num">+3.9</span><span class="meta">胜率 48.4% · 2.2 万场 · <span class="rk">第 8 / 121</span></span></li><li><span class="hero">虚空女皇</span><span class="track"><span class="bar" style="width:65.0%"></span></span><span class="num">+3.9</span><span class="meta">胜率 59.8% · 2.6 万场 · <span class="rk">第 11 / 112</span></span></li></ol>
+</section>
+
+<section>
+  <h2>全能龙魂 <span class="tag prism">棱彩</span></h2>
+  <p class="desc">获得 3 个随机龙魂。</p>
+  <div class="kpis">
+    <div class="kpi"><b>137/149</b><span>个英雄拿了是正收益</span></div>
+    <div class="kpi"><b>+1.8</b><span>收益中位数</span></div>
+    <div class="kpi"><b>随机</b><span>哪个龙魂都不亏，所以稳</span></div>
+  </div>
+  <p>收益不如前两张大，胜在几乎对所有英雄都是加分。坦克和法师拿了最赚：</p>
+  <ol class='bars'><li><span class="hero">诡术妖姬</span><span class="track"><span class="bar" style="width:90.0%"></span></span><span class="num">+5.4</span><span class="meta">胜率 49.1% · 5143 场 · <span class="rk">第 1 / 91</span></span></li><li><span class="hero">虚空恐惧</span><span class="track"><span class="bar" style="width:71.7%"></span></span><span class="num">+4.3</span><span class="meta">胜率 51.4% · 1.4 万场 · <span class="rk">第 2 / 133</span></span></li><li><span class="hero">盲僧</span><span class="track"><span class="bar" style="width:70.0%"></span></span><span class="num">+4.2</span><span class="meta">胜率 46.0% · 1.0 万场 · <span class="rk">第 3 / 112</span></span></li><li><span class="hero">沙漠皇帝</span><span class="track"><span class="bar" style="width:70.0%"></span></span><span class="num">+4.2</span><span class="meta">胜率 52.2% · 4170 场 · <span class="rk">第 9 / 91</span></span></li><li><span class="hero">沙漠死神</span><span class="track"><span class="bar" style="width:66.7%"></span></span><span class="num">+4.0</span><span class="meta">胜率 53.0% · 8802 场 · <span class="rk">第 6 / 141</span></span></li><li><span class="hero">炼金术士</span><span class="track"><span class="bar" style="width:63.3%"></span></span><span class="num">+3.8</span><span class="meta">胜率 55.7% · 1.2 万场 · <span class="rk">第 6 / 118</span></span></li><li><span class="hero">铁铠冥魂</span><span class="track"><span class="bar" style="width:63.3%"></span></span><span class="num">+3.8</span><span class="meta">胜率 50.3% · 9170 场 · <span class="rk">第 5 / 137</span></span></li><li><span class="hero">德玛西亚之翼</span><span class="track"><span class="bar" style="width:63.3%"></span></span><span class="num">+3.8</span><span class="meta">胜率 51.4% · 3221 场 · <span class="rk">第 5 / 87</span></span></li><li><span class="hero">冰晶凤凰</span><span class="track"><span class="bar" style="width:63.3%"></span></span><span class="num">+3.8</span><span class="meta">胜率 48.9% · 6503 场 · <span class="rk">第 2 / 83</span></span></li><li><span class="hero">魂锁典狱长</span><span class="track"><span class="bar" style="width:63.3%"></span></span><span class="num">+3.8</span><span class="meta">胜率 47.8% · 1.1 万场 · <span class="rk">第 1 / 125</span></span></li></ol>
+  <p class="note">少数几个英雄拿了略亏：疾风剑豪（-0.8）、德邦总管（-0.9）、沙漠玫瑰（-1.0）、无极剑圣（-1.8）。</p>
+</section>
+
+<section>
+  <h2>虚幻武器 <span class="tag gold">黄金</span></h2>
+  <p class="desc">技能附带攻击特效（每个目标 1 秒冷却）。</p>
+  <p><b>整体中位数是 -2.2，多数英雄拿了反而亏</b>；但对技能打得勤、打得多段的英雄，它是顶级牌。同一张牌，最好和最差的英雄差了 17 个百分点：</p>
+  <div class="dvlegend"><span>← 拿了亏</span><span>拿了赚 →</span></div>
+  <ol class='bars'><li class="pos"><span class="hero">破败之王</span><span class="track dv"><span class="axis"></span><span class="bar" style="left:50%;width:44.0%"></span></span><span class="num">+8.8</span><span class="meta">5.4 万场</span></li><li class="pos"><span class="hero">迅捷斥候</span><span class="track dv"><span class="axis"></span><span class="bar" style="left:50%;width:39.0%"></span></span><span class="num">+7.8</span><span class="meta">43.2 万场</span></li><li class="pos"><span class="hero">不祥之刃</span><span class="track dv"><span class="axis"></span><span class="bar" style="left:50%;width:37.0%"></span></span><span class="num">+7.4</span><span class="meta">29.5 万场</span></li><li class="pos"><span class="hero">灵罗娃娃</span><span class="track dv"><span class="axis"></span><span class="bar" style="left:50%;width:31.5%"></span></span><span class="num">+6.3</span><span class="meta">11.1 万场</span></li><li class="pos"><span class="hero">洛克</span><span class="track dv"><span class="axis"></span><span class="bar" style="left:50%;width:31.0%"></span></span><span class="num">+6.2</span><span class="meta">3.3 万场</span></li><li class="pos"><span class="hero">时间刺客</span><span class="track dv"><span class="axis"></span><span class="bar" style="left:50%;width:28.0%"></span></span><span class="num">+5.6</span><span class="meta">29.0 万场</span></li><li class="pos"><span class="hero">皎月女神</span><span class="track dv"><span class="axis"></span><span class="bar" style="left:50%;width:25.0%"></span></span><span class="num">+5.0</span><span class="meta">5.5 万场</span></li><li class="neg"><span class="hero">众星之子</span><span class="track dv"><span class="axis"></span><span class="bar" style="right:50%;width:38.0%"></span></span><span class="num">-7.6</span><span class="meta">5511 场</span></li><li class="neg"><span class="hero">符文法师</span><span class="track dv"><span class="axis"></span><span class="bar" style="right:50%;width:41.0%"></span></span><span class="num">-8.2</span><span class="meta">8.5 万场</span></li><li class="neg"><span class="hero">魔法猫咪</span><span class="track dv"><span class="axis"></span><span class="bar" style="right:50%;width:41.0%"></span></span><span class="num">-8.2</span><span class="meta">7399 场</span></li><li class="neg"><span class="hero">仙灵女巫</span><span class="track dv"><span class="axis"></span><span class="bar" style="right:50%;width:42.0%"></span></span><span class="num">-8.4</span><span class="meta">6443 场</span></li></ol>
+</section>
+
+<section>
+  <h2>只属于某个英雄的神组合</h2>
+  <p>这些海克斯放在别的英雄身上很普通，甚至是烂牌，配对了英雄就是胜率暴涨：</p>
+  <ul class="combos"><li><div class="cg">+17.9</div><div><b>亮出你的剑</b> × 沙漠玫瑰<div class="cm">拿了后胜率 65.9% · 远程变近战，失去的射程换成属性</div></div></li><li><div class="cg">+15.1</div><div><b>亮出你的剑</b> × 皮城女警<div class="cm">拿了后胜率 68.0% · 射程越长，换得越多</div></div></li><li><div class="cg">+14.2</div><div><b>秘术冲拳</b> × 不灭狂雷<div class="cm">拿了后胜率 63.5% · 整体是 −3.6 的烂牌，只在他手里是神牌</div></div></li><li><div class="cg">+13.3</div><div><b>回响施放</b> × 卡牌大师<div class="cm">拿了后胜率 69.5% · 24 万场，样本极大</div></div></li><li><div class="cg">+13.1</div><div><b>死亡之环</b> × 祖安狂人<div class="cm">拿了后胜率 62.3% · 治疗量转成伤害</div></div></li><li><div class="cg">+12.2</div><div><b>亮出你的剑</b> × 法外狂徒<div class="cm">拿了后胜率 64.3% · 39 万场</div></div></li></ul>
+</section>
+
+<footer>
+  <div>国服海克斯大乱斗 · 游戏版本 16.19 · 2026-09-28 整理。</div>
+  <div>这里的胜率是"拿了这张牌的对局"的统计，属于相关性。跨一百多个英雄都稳定为正的牌、以及几十万场的单英雄组合，可信度最高。</div>
+</footer>
+</div>

@@ -1,0 +1,126 @@
+<title>海克斯反差榜</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#EDF0F5;--surface:#FFFFFF;--ink:#172033;--muted:#5A6479;--line:#D5DAE4;
+  --gold:#A87A12;--prism:#6E45C9;--silver:#6B7A90;--good:#1C7F55;--bad:#B93A33;
+  --track:#E3E7EE;--barg:linear-gradient(90deg,#8C6FE0,#6E45C9);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#0F131B;--surface:#171D29;--ink:#E6E9F0;--muted:#98A1B5;--line:#2A3243;
+    --gold:#E0B64C;--prism:#B196FF;--silver:#A9B6C9;--good:#4FC98E;--bad:#FF7F73;
+    --track:#232B3A;--barg:linear-gradient(90deg,#7D5CE0,#B196FF);}
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0F131B;--surface:#171D29;--ink:#E6E9F0;--muted:#98A1B5;--line:#2A3243;
+  --gold:#E0B64C;--prism:#B196FF;--silver:#A9B6C9;--good:#4FC98E;--bad:#FF7F73;
+  --track:#232B3A;--barg:linear-gradient(90deg,#7D5CE0,#B196FF);}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;padding-inline:16px;padding-block:28px 56px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2{font-family:"Noto Serif SC","Songti SC",serif;text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:clamp(28px,6vw,42px);font-weight:900}
+h2{font-size:clamp(21px,4.4vw,27px);font-weight:900;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+p{margin:0;max-width:65ch}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:500}
+.lede{font-size:17px;color:var(--muted)}
+.lede b{color:var(--ink)}
+header{display:flex;flex-direction:column;gap:14px}
+.def{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--muted)}
+.def b{color:var(--ink)}
+.mono,.num,.cg,.kpi b{font-family:"IBM Plex Mono",ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+section{display:flex;flex-direction:column;gap:14px}
+.tag{font:600 12px/1 "Noto Sans SC",sans-serif;padding:4px 8px;border-radius:4px;border:1px solid currentColor;letter-spacing:.04em}
+.tag.prism{color:var(--prism)}.tag.silver{color:var(--silver)}.tag.gold{color:var(--gold)}
+.desc{font-size:14px;color:var(--muted);border-left:3px solid var(--line);padding-left:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-size:24px;font-weight:600;color:var(--ink)}
+.kpi span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.bars{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.bars li{display:grid;grid-template-columns:6.2em 1fr 3.4em;grid-template-areas:"hero track num" ". meta meta";column-gap:10px;align-items:center}
+.hero{grid-area:hero;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{grid-area:track;height:12px;background:var(--track);border-radius:3px;position:relative;overflow:hidden}
+.bar{position:absolute;top:0;bottom:0;left:0;background:var(--barg);border-radius:3px}
+.num{grid-area:num;text-align:right;font-weight:600;color:var(--good)}
+.meta{grid-area:meta;font-size:12px;color:var(--muted);line-height:1.3}
+.rk{color:var(--gold);font-weight:500}
+.dv .axis{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--muted);opacity:.6}
+.bars li.pos .bar{background:var(--good)}
+.bars li.neg .bar{background:var(--bad);left:auto}
+.bars li.neg .num{color:var(--bad)}
+.dvlegend{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding-left:calc(6.2em + 10px);padding-right:calc(3.4em + 10px)}
+.note{font-size:13.5px;color:var(--muted)}
+.combos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.combos li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.cg{font-size:20px;font-weight:600;color:var(--good);min-width:3.2em}
+.cm{font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:2px}
+footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:6px}
+@media (max-width:560px){.kpi b{font-size:19px}.kpi{padding:10px}.combos{grid-template-columns:1fr}}
+</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow">海克斯大乱斗 · 国服 16.19 · 173 个英雄</div>
+  <h1>同一张海克斯，换个英雄能差 20 个百分点</h1>
+  <p class="lede">看描述挑海克斯，容易被"看起来很强"的牌骗。几十万场国服对局统计出来，<b>有些平平无奇的牌几乎对谁都赚，有些牌只对特定英雄是神牌</b>。</p>
+  <div class="def"><b>怎么读：</b>收益 = 拿了这张海克斯的对局胜率，减去这个英雄的平均胜率（单位：百分点）。<span class="mono">+5.0</span> 就是从 50% 变成 55%。每个英雄只统计 ≥3000 场的海克斯。</div>
+</header>
+
+<section>
+  <h2>科学狂人 <span class="tag prism">棱彩</span></h2>
+  <p class="desc">回合开始时随机变大（加适应之力和生命值）或变小（加技能急速和移速）。</p>
+  <div class="kpis">
+    <div class="kpi"><b>@S1pos/@S1n</b><span>个英雄拿了是正收益</span></div>
+    <div class="kpi"><b>@S1t10</b><span>个英雄里排进前 10（每个英雄约 100 张可比）</span></div>
+    <div class="kpi"><b>+@S1med</b><span>收益中位数，全部海克斯第一</span></div>
+  </div>
+  <p>变大变小都是纯加成、没有代价，而且和英雄定位无关，战士、刺客、射手全吃得到。收益最高的 10 个英雄：</p>
+  @sci
+  <p class="note">最不赚的也只是持平：@scilow。</p>
+</section>
+
+<section>
+  <h2>逃跑计划 <span class="tag silver">白银</span></h2>
+  <p class="desc">生命值降低时，获得巨量衰减护盾、加速和缩小。</p>
+  <div class="kpis">
+    <div class="kpi"><b>@S2pos/@S2n</b><span>个英雄拿了是正收益</span></div>
+    <div class="kpi"><b>+@S2med</b><span>收益中位数，仅次于科学狂人</span></div>
+    <div class="kpi"><b>白银</b><span>最低一档，却比绝大多数棱彩牌更稳</span></div>
+  </div>
+  <p>一张不起眼的保命牌。大乱斗天天打团，多活几秒就能多打几轮伤害。</p>
+  @esc
+</section>
+
+<section>
+  <h2>全能龙魂 <span class="tag prism">棱彩</span></h2>
+  <p class="desc">获得 3 个随机龙魂。</p>
+  <div class="kpis">
+    <div class="kpi"><b>@S3pos/@S3n</b><span>个英雄拿了是正收益</span></div>
+    <div class="kpi"><b>+@S3med</b><span>收益中位数</span></div>
+    <div class="kpi"><b>随机</b><span>哪个龙魂都不亏，所以稳</span></div>
+  </div>
+  <p>收益不如前两张大，胜在几乎对所有英雄都是加分。坦克和法师拿了最赚：</p>
+  @dra
+  <p class="note">少数几个英雄拿了略亏：@dralow。</p>
+</section>
+
+<section>
+  <h2>虚幻武器 <span class="tag gold">黄金</span></h2>
+  <p class="desc">技能附带攻击特效（每个目标 1 秒冷却）。</p>
+  <p><b>整体中位数是 @S4med，多数英雄拿了反而亏</b>；但对技能打得勤、打得多段的英雄，它是顶级牌。同一张牌，最好和最差的英雄差了 17 个百分点：</p>
+  <div class="dvlegend"><span>← 拿了亏</span><span>拿了赚 →</span></div>
+  @vw
+</section>
+
+<section>
+  <h2>只属于某个英雄的神组合</h2>
+  <p>这些海克斯放在别的英雄身上很普通，甚至是烂牌，配对了英雄就是胜率暴涨：</p>
+  <ul class="combos">@cmb</ul>
+</section>
+
+<footer>
+  <div>国服海克斯大乱斗 · 游戏版本 16.19 · 2026-09-28 整理。</div>
+  <div>这里的胜率是"拿了这张牌的对局"的统计，属于相关性。跨一百多个英雄都稳定为正的牌、以及几十万场的单英雄组合，可信度最高。</div>
+</footer>
+</div>
